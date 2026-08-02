@@ -94,6 +94,30 @@ trace = pipeline.run("in.wav", "out.wav")
 Note: LLM stage dominates latency (~6s for a 3B model on CPU via Ollama on M2)
 — this is a CPU-only local setup, not a production-latency benchmark.
 
+### Eval harness — `src/eval/`
+- `llm_judge.py`: `LLMJudge` uses `LocalLLM` (small model, default judge) to
+  score (transcript, response) pairs on `factual_correctness` (1-5),
+  `refusal_appropriate` (bool), `conciseness` (1-5), with a structured JSON
+  output that's parsed and validated. **Limitation:** small judge models are
+  less reliable — see the measured `refusal_appropriate` scoring noise in
+  `benchmarks/results/eval_report.md`. TODO hook for a stronger Colab-hosted
+  judge (Qwen2.5-7B-Instruct) is left in the code (v0.5b, optional).
+- `latency_report.py`: aggregates pipeline traces into P50/P95/P99 per stage.
+- `run_eval.py`: CLI that runs the full pipeline + judge over 12 synthetic
+  scripted customer questions (`data/samples/test_questions.py`, generic
+  support domain, built with our own Piper TTS), writes
+  `benchmarks/results/eval_report.md` with per-sample scores, aggregates,
+  latency table, and failure cases.
+
+```bash
+PYTHONPATH=src python src/eval/run_eval.py
+```
+
+Real run (n=12): avg factual_correctness 4.33/5, avg conciseness 3.08/5,
+refusal-appropriate rate 25% — the low refusal rate reflects the small judge
+model's inconsistent interpretation of "refusal," not actual pipeline
+failures; see failure cases in the report for the judge's own rationale.
+
 ## Setup
 
 ```bash
