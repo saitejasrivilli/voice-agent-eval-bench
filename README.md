@@ -63,6 +63,37 @@ vad.is_endpoint(audio_chunk_np_array, silence_threshold_ms=700)
 # True if trailing silence in the chunk exceeds the threshold
 ```
 
+### LLM — `src/llm/local_llm.py`
+`LocalLLM` wraps [Ollama](https://ollama.com)'s local HTTP API for on-device
+inference. Default model `qwen2.5:3b` (override via `OLLAMA_MODEL` env var).
+Requires `ollama serve` running locally and the model pulled
+(`ollama pull qwen2.5:3b`).
+
+```python
+from llm.local_llm import LocalLLM
+
+llm = LocalLLM()
+result = llm.generate("What are your hours?", system_prompt="You are a support agent.")
+# {"text": ..., "latency_ms": ..., "model": ...}
+```
+
+### Pipeline — `src/pipeline/voice_agent.py`
+`VoiceAgentPipeline` chains all four stages: audio in -> VAD trims silence ->
+ASR transcribes -> LocalLLM generates a reply -> TTS synthesizes reply.
+Returns a full trace dict with per-stage and total latency.
+
+```python
+from pipeline.voice_agent import VoiceAgentPipeline
+
+pipeline = VoiceAgentPipeline()
+trace = pipeline.run("in.wav", "out.wav")
+# {"transcript": ..., "response_text": ..., "response_audio_path": ...,
+#  "asr_ms": ..., "llm_ms": ..., "tts_ms": ..., "total_ms": ...}
+```
+
+Note: LLM stage dominates latency (~6s for a 3B model on CPU via Ollama on M2)
+— this is a CPU-only local setup, not a production-latency benchmark.
+
 ## Setup
 
 ```bash
