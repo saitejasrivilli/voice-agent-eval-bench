@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+data/samples/*.wav
+!data/samples/.gitkeep
+benchmarks/results/*.json
+models/
+.DS_Store

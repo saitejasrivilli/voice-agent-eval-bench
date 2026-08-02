@@ -1,0 +1,13 @@
+[project]
+name = "voice-agent-eval-bench"
+version = "0.1.0"
+description = "Voice agent evaluation benchmark suite"
+requires-python = ">=3.11"
+dependencies = [
+    "faster-whisper>=1.0.0",
+    "numpy",
+    "soundfile",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
