@@ -27,6 +27,27 @@ result = asr.transcribe("path/to/audio.wav")
 # {"transcript": ..., "latency_ms": ..., "language": ..., "model_size": ...}
 ```
 
+### TTS — `src/tts/piper_tts.py`
+`PiperTTS` wraps [Piper](https://github.com/OHF-voice/piper1-gpl) (ONNX
+runtime, CPU-only). Voice model: `en_US-lessac-low` (~63MB, low-quality/fast
+tier), downloaded from
+[rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) into
+`models/piper/` (gitignored — re-download via the command below).
+
+```bash
+mkdir -p models/piper && cd models/piper
+curl -sL -o en_US-lessac-low.onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/low/en_US-lessac-low.onnx
+curl -sL -o en_US-lessac-low.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/low/en_US-lessac-low.onnx.json
+```
+
+```python
+from tts.piper_tts import PiperTTS
+
+tts = PiperTTS()
+result = tts.synthesize("Hello there.", "out.wav")
+# {"latency_ms": ..., "audio_path": ..., "duration_sec": ...}
+```
+
 ## Setup
 
 ```bash
