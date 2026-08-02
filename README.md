@@ -118,6 +118,25 @@ refusal-appropriate rate 25% — the low refusal rate reflects the small judge
 model's inconsistent interpretation of "refusal," not actual pipeline
 failures; see failure cases in the report for the judge's own rationale.
 
+### Domain configs — `configs/`
+Domain (persona, topic scope, eval rubric weights) comes from a YAML config,
+not hardcoded logic. `VoiceAgentPipeline.from_config(...)` and
+`run_eval.py --config ...` both take a config path.
+
+```bash
+PYTHONPATH=src python src/eval/run_eval.py --config configs/generic_support.yaml
+PYTHONPATH=src python src/eval/run_eval.py --config configs/finance_support.yaml
+```
+
+Validated across 2 domains with **zero pipeline code changes**:
+- `configs/generic_support.yaml` — general FAQ support
+- `configs/finance_support.yaml` — generic informational finance FAQ only
+  (payment due dates, autopay, hardship basics) — explicitly refuses
+  account-specific/regulatory questions
+
+See `benchmarks/results/comparison.md` for a side-by-side of both domains'
+real eval results.
+
 ## Setup
 
 ```bash

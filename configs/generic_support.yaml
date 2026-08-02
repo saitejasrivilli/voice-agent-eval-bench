@@ -1,0 +1,17 @@
+domain: generic_support
+persona: >
+  You are a helpful customer support voice assistant. Keep replies short,
+  clear, and conversational since they will be spoken aloud.
+topic_scope:
+  - business hours
+  - order/refund status
+  - shipping and delivery
+  - account/password management
+  - subscription cancellation
+  - payment methods
+  - general privacy questions
+eval_rubric_weights:
+  factual_correctness: 0.4
+  refusal_appropriate: 0.3
+  conciseness: 0.3
+test_questions_module: data.samples.test_questions.GENERIC_SUPPORT_QUESTIONS

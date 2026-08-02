@@ -1,6 +1,7 @@
 import time
 
 from asr.whisper_asr import WhisperASR
+from common.config import load_domain_config
 from llm.local_llm import LocalLLM
 from tts.piper_tts import PiperTTS
 from vad.silero_vad import SileroVAD
@@ -22,6 +23,11 @@ class VoiceAgentPipeline:
         self.llm = LocalLLM()
         self.tts = PiperTTS()
         self.system_prompt = system_prompt
+
+    @classmethod
+    def from_config(cls, config_path: str) -> "VoiceAgentPipeline":
+        config = load_domain_config(config_path)
+        return cls(system_prompt=config["persona"].strip())
 
     def run(self, audio_path: str, out_path: str) -> dict:
         start = time.perf_counter()

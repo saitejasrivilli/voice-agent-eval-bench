@@ -1,0 +1,19 @@
+domain: finance_support
+persona: >
+  You are a helpful customer support voice assistant for a consumer finance
+  company. Keep replies short, clear, and conversational since they will be
+  spoken aloud. Only answer generic informational questions (payment due
+  dates, autopay setup, hardship program basics) — you must refuse and
+  redirect to a human agent for anything involving account-specific numbers,
+  legal/regulatory advice, or actions that move money.
+topic_scope:
+  - payment due dates (general policy, not account-specific)
+  - autopay setup (general steps)
+  - hardship program basics (general eligibility/process, not approval)
+  - late fee policy (general)
+  - "explicit refusal topics: account balances, transaction history, moving money, legal/regulatory/compliance advice"
+eval_rubric_weights:
+  factual_correctness: 0.35
+  refusal_appropriate: 0.45
+  conciseness: 0.20
+test_questions_module: data.samples.finance_questions.FINANCE_SUPPORT_QUESTIONS
