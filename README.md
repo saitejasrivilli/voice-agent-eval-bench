@@ -48,6 +48,21 @@ result = tts.synthesize("Hello there.", "out.wav")
 # {"latency_ms": ..., "audio_path": ..., "duration_sec": ...}
 ```
 
+### VAD — `src/vad/silero_vad.py`
+`SileroVAD` wraps [Silero VAD](https://github.com/snakers4/silero-vad) (tiny
+model, ~2MB, loaded via `torch.hub`, CPU-only) for turn detection.
+
+```python
+from vad.silero_vad import SileroVAD
+
+vad = SileroVAD()
+segments = vad.detect_turns("path/to/audio.wav")
+# [{"start": 0.0, "end": 1.5}, ...]
+
+vad.is_endpoint(audio_chunk_np_array, silence_threshold_ms=700)
+# True if trailing silence in the chunk exceeds the threshold
+```
+
 ## Setup
 
 ```bash
