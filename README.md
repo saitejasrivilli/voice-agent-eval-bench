@@ -208,6 +208,36 @@ relies on more than it removes noise, at this noise type/level combination.
 This is a real measured result, not the outcome we expected going in; see the
 Interpretation section of `noise_robustness.md` for the actual tradeoff.
 
+## Sub-study: Multilingual Turn Detection — `src/multilingual/`, `benchmarks/run_multilingual_vad.py`
+Extends the flagship eval with a per-language VAD boundary-accuracy study,
+fully local/CPU. Reuses `src/vad/silero_vad.py` (no duplicated VAD code).
+
+- Data: 15 utterances per language (English, Spanish, German, Mandarin) from
+  `google/fleurs`. **Note:** Mozilla Common Voice requires HF dataset-gate
+  auth not available in this environment — FLEURS was substituted, also a
+  standard, license-open multilingual speech corpus.
+- Metric: FLEURS clips are trimmed read-speech with minimal silence, so we
+  treat the full clip span as expected speech and compute boundary error
+  (mean |detected onset - 0| and |detected offset - clip end|, seconds) plus
+  a coverage ratio (detected speech duration / clip duration).
+
+```bash
+python benchmarks/run_multilingual_vad.py
+```
+
+Real result (n=15/language, Silero VAD):
+
+| language | mean coverage ratio |
+|---|---|
+| english | 0.787 |
+| spanish | 0.711 |
+| german | 0.730 |
+| mandarin | 0.656 |
+
+Mandarin shows the lowest coverage — see `benchmarks/results/multilingual_vad.md`
+for the full table and clearly-labeled hypotheses (not confirmed root causes)
+about why.
+
 ## Setup
 
 ```bash
