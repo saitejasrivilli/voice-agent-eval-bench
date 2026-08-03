@@ -1,15 +1,61 @@
 # Voice Agent Eval Bench
 
-A voice-agent evaluation benchmark: ASR, TTS, VAD, LLM pipeline, and an eval
-harness with an LLM judge — built to run fully locally on Apple Silicon.
+A voice-agent evaluation benchmark: ASR, TTS, VAD, an LLM pipeline, and an
+eval harness with an LLM judge — built to run fully locally on Apple Silicon,
+plus two sub-studies (noise robustness, multilingual turn detection) and a
+LoRA fine-tuning workflow.
 
-## Scope
+## Architecture
 
-Everything in this repo runs locally on CPU (M2 MacBook), including ASR, TTS,
-VAD, the LLM pipeline (via Ollama/MLX), and the eval harness. The only step
-that benefits from GPU is LoRA fine-tuning (later phase) — that step has an
-optional Colab path documented in `colab/`. No cloud services are required for
-anything else.
+```
+audio in -> VAD (Silero, trims silence)
+         -> ASR (faster-whisper, CPU int8)
+         -> LocalLLM (Ollama, domain persona from configs/*.yaml)
+         -> TTS (Piper) -> audio out
+                |
+                v
+       LLMJudge scores (transcript, response)
+       -> benchmarks/results/eval_report_<domain>.md
+```
+See `src/pipeline/voice_agent.py` for the orchestrating code.
+
+## What's local vs. Colab, and why
+
+| Stage | Where | Why |
+|---|---|---|
+| ASR, TTS, VAD, LLM pipeline, eval harness | Local (M2 CPU) | All small enough to run fast on CPU; no GPU benefit |
+| Domain configs, both sub-studies (noise robustness, multilingual VAD) | Local (M2 CPU) | Same — CPU-friendly models/datasets throughout |
+| LoRA SFT + DPO fine-tuning | Colab (free T4 GPU) | Only step that meaningfully benefits from GPU headroom; Unsloth make this cheap on a free T4 |
+| Stronger judge model (optional, v0.5b) | Colab (free T4 GPU) | Optional polish — a 7B judge doesn't fit comfortably in this CPU setup |
+
+## Reports (all from real measured runs)
+
+- `benchmarks/results/eval_report_generic_support.md`, `eval_report_finance_support.md`, `comparison.md` — eval harness results per domain
+- `benchmarks/results/noise_robustness.md` (+ `.png`) — WER vs SNR, with/without enhancement
+- `benchmarks/results/multilingual_vad.md` — VAD boundary accuracy across 4 languages
+- `benchmarks/results/finetune_comparison.md` — **pending**: requires running `colab/finetune_unsloth.ipynb` on Colab first (see Fine-tuning section below)
+
+## Honest scope
+
+- All eval data (test questions, SFT/preference-pair prompts) is **synthetic**,
+  clearly labeled as such in the code and data files — not real customer data.
+- Judge model is small (3B via Ollama) by default; documented as a reliability
+  limitation, with measured evidence in the eval reports themselves (e.g. the
+  `refusal_appropriate` scoring noise).
+- Sample sizes are small everywhere (10-15 per experiment) and stated plainly
+  in each report — this is a benchmark harness demonstration, not a
+  statistically powered study.
+- Latency numbers are local CPU numbers on one M2 MacBook, not production
+  infrastructure numbers — a real deployment would need GPU-backed ASR/LLM
+  serving, load balancing, and streaming (not batch) audio I/O to hit
+  production latency targets.
+- Mozilla Common Voice (the originally planned multilingual dataset) requires
+  HF dataset-gate auth unavailable in this environment; `google/fleurs` was
+  substituted — also a standard, open multilingual speech corpus.
+- Fine-tuning data prep (SFT + preference pairs) is complete and committed;
+  the actual LoRA training requires manually running
+  `colab/finetune_unsloth.ipynb` on Colab's free GPU runtime — it can't
+  execute in this local CPU-only environment.
 
 ## Components
 
@@ -100,13 +146,13 @@ Note: LLM stage dominates latency (~6s for a 3B model on CPU via Ollama on M2)
   `refusal_appropriate` (bool), `conciseness` (1-5), with a structured JSON
   output that's parsed and validated. **Limitation:** small judge models are
   less reliable — see the measured `refusal_appropriate` scoring noise in
-  `benchmarks/results/eval_report.md`. TODO hook for a stronger Colab-hosted
+  `benchmarks/results/eval_report_generic_support.md`. TODO hook for a stronger Colab-hosted
   judge (Qwen2.5-7B-Instruct) is left in the code (v0.5b, optional).
 - `latency_report.py`: aggregates pipeline traces into P50/P95/P99 per stage.
 - `run_eval.py`: CLI that runs the full pipeline + judge over 12 synthetic
   scripted customer questions (`data/samples/test_questions.py`, generic
   support domain, built with our own Piper TTS), writes
-  `benchmarks/results/eval_report.md` with per-sample scores, aggregates,
+  `benchmarks/results/eval_report_<domain>.md` with per-sample scores, aggregates,
   latency table, and failure cases.
 
 ```bash
