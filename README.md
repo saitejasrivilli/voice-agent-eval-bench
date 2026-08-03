@@ -49,6 +49,10 @@ See `src/pipeline/voice_agent.py` for the orchestrating code.
   infrastructure numbers — a real deployment would need GPU-backed ASR/LLM
   serving, load balancing, and streaming (not batch) audio I/O to hit
   production latency targets.
+- Fine-tuning used `Qwen2.5-1.5B-Instruct`, smaller than the main pipeline's
+  default `qwen2.5:3b` (Ollama) — the 1.5B size was chosen to keep SFT+DPO
+  feasible in RAM/time on this 8GB CPU-only Mac; the two are not the same
+  model and results aren't directly cross-comparable.
 - Mozilla Common Voice (the originally planned multilingual dataset) requires
   HF dataset-gate auth unavailable in this environment; `google/fleurs` was
   substituted — also a standard, open multilingual speech corpus.
@@ -253,6 +257,14 @@ Real result (n=10 utterances, `WhisperASR("small")`):
 
 WER stays roughly flat down to 5dB, then degrades sharply below 0dB — see
 `benchmarks/results/noise_robustness.md` and `.png` for the full table/plot.
+
+**Flagging an anomaly rather than smoothing over it:** clean WER (0.081) is
+*higher* than 20/10/5dB WER (0.066-0.070), which is backwards — noise should
+never lower WER. At n=10 utterances, this is almost certainly sample noise
+(one or two clean-condition transcription errors on utterances that happen to
+transcribe more easily once slightly perturbed by noise), not a real effect.
+A larger sample would very likely show clean WER at or below the least-noisy
+condition, as expected.
 
 `src/robustness/enhancer.py` adds a `noisereduce` (spectral gating) denoising
 step and reports enhanced WER + latency (~97ms/utterance) at each SNR level.
