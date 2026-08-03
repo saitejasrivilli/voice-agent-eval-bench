@@ -1,0 +1,11 @@
+{
+  "device": "cpu",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "sft_examples": 95,
+  "sft_time_sec": 8936.9,
+  "sft_train_loss": 2.746,
+  "sft_mean_token_accuracy": 0.5529,
+  "note": "Trained locally on CPU (plain transformers/peft/trl), not Unsloth/T4 \u2014 Unsloth requires CUDA, unavailable in this environment.",
+  "pref_examples": 25,
+  "dpo_time_sec": 44527.36576104164
+}

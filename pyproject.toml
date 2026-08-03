@@ -16,6 +16,9 @@ dependencies = [
     "datasets",
     "matplotlib",
     "noisereduce",
+    "peft",
+    "trl",
+    "accelerate",
 ]
 
 [tool.setuptools.packages.find]
