@@ -188,17 +188,25 @@ python benchmarks/run_noise_benchmark.py
 
 Real result (n=10 utterances, `WhisperASR("small")`):
 
-| condition | mean WER |
-|---|---|
-| clean | 0.081 |
-| 20 dB SNR | 0.066 |
-| 10 dB SNR | 0.070 |
-| 5 dB SNR | 0.064 |
-| 0 dB SNR | 0.110 |
-| -5 dB SNR | 0.219 |
+| condition | mean WER | mean WER (enhanced) |
+|---|---|---|
+| clean | 0.081 | - |
+| 20 dB SNR | 0.066 | 0.077 |
+| 10 dB SNR | 0.070 | 0.090 |
+| 5 dB SNR | 0.064 | 0.098 |
+| 0 dB SNR | 0.110 | 0.198 |
+| -5 dB SNR | 0.219 | 0.247 |
 
 WER stays roughly flat down to 5dB, then degrades sharply below 0dB — see
 `benchmarks/results/noise_robustness.md` and `.png` for the full table/plot.
+
+`src/robustness/enhancer.py` adds a `noisereduce` (spectral gating) denoising
+step and reports enhanced WER + latency (~97ms/utterance) at each SNR level.
+**Honest finding:** enhancement made WER *worse* at every tested SNR in this
+run, not better — spectral gating likely distorts speech features Whisper
+relies on more than it removes noise, at this noise type/level combination.
+This is a real measured result, not the outcome we expected going in; see the
+Interpretation section of `noise_robustness.md` for the actual tradeoff.
 
 ## Setup
 

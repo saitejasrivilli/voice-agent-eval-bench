@@ -15,6 +15,7 @@ dependencies = [
     "jiwer",
     "datasets",
     "matplotlib",
+    "noisereduce",
 ]
 
 [tool.setuptools.packages.find]
