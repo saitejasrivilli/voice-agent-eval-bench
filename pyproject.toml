@@ -12,6 +12,9 @@ dependencies = [
     "soundfile",
     "requests",
     "pyyaml",
+    "jiwer",
+    "datasets",
+    "matplotlib",
 ]
 
 [tool.setuptools.packages.find]

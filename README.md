@@ -169,6 +169,37 @@ running the notebook on Colab — it has GPU-training cells that can't execute
 in this local CPU-only environment. `benchmarks/results/finetune_comparison.md`
 will be added after that checkpoint is downloaded and evaluated locally.
 
+## Sub-study: Noise Robustness — `src/robustness/`, `benchmarks/run_noise_benchmark.py`
+Extends the flagship eval with a WER-vs-SNR robustness study, fully local/CPU.
+Reuses `src/asr/whisper_asr.py` (no duplicated ASR code).
+
+- Data: 10 utterances from LibriSpeech dev-clean (via
+  `hf-internal-testing/librispeech_asr_dummy`, real dev-clean audio + ground
+  truth transcripts) and 5 environmental noise clips from ESC-50
+  (`ashraq/esc50`) — dog, chirping birds, vacuum cleaner (x2), thunderstorm.
+- `noise_mixer.py` mixes speech + noise at SNR levels [20, 10, 5, 0, -5] dB.
+- `wer.py` computes WER via `jiwer` with lowercase/punctuation-normalized text
+  (LibriSpeech references are uppercase, unpunctuated — normalizing both
+  sides avoids inflating WER with formatting mismatches, not real errors).
+
+```bash
+python benchmarks/run_noise_benchmark.py
+```
+
+Real result (n=10 utterances, `WhisperASR("small")`):
+
+| condition | mean WER |
+|---|---|
+| clean | 0.081 |
+| 20 dB SNR | 0.066 |
+| 10 dB SNR | 0.070 |
+| 5 dB SNR | 0.064 |
+| 0 dB SNR | 0.110 |
+| -5 dB SNR | 0.219 |
+
+WER stays roughly flat down to 5dB, then degrades sharply below 0dB — see
+`benchmarks/results/noise_robustness.md` and `.png` for the full table/plot.
+
 ## Setup
 
 ```bash
