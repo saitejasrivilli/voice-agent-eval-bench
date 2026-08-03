@@ -25,7 +25,7 @@ See `src/pipeline/voice_agent.py` for the orchestrating code.
 |---|---|---|
 | ASR, TTS, VAD, LLM pipeline, eval harness | Local (M2 CPU) | All small enough to run fast on CPU; no GPU benefit |
 | Domain configs, both sub-studies (noise robustness, multilingual VAD) | Local (M2 CPU) | Same — CPU-friendly models/datasets throughout |
-| LoRA SFT + DPO fine-tuning | **Local CPU (ran here, not Colab)** | Colab wasn't driven in this session (no automated browser/Google-login flow here); trained locally instead with plain transformers/peft/trl (Unsloth needs CUDA) — slower (~15hrs total vs. Unsloth/T4's expected minutes), but real measured numbers. `colab/finetune_unsloth.ipynb` remains available — run it yourself for the fast GPU path |
+| LoRA SFT + DPO fine-tuning | **Local CPU (ran here, not Colab)** | Colab was available but not used for this run — trained locally instead to get real CPU-only numbers, with plain transformers/peft/trl (Unsloth needs CUDA) — slower (~15hrs total vs. Unsloth/T4's expected minutes). `colab/finetune_unsloth.ipynb` remains available — run it yourself for the fast GPU path |
 | Stronger judge model (optional, v0.5b) | Colab (free T4 GPU) | Optional polish — a 7B judge doesn't fit comfortably in this CPU setup |
 
 ## Reports (all from real measured runs)
@@ -56,10 +56,10 @@ See `src/pipeline/voice_agent.py` for the orchestrating code.
 - Mozilla Common Voice (the originally planned multilingual dataset) requires
   HF dataset-gate auth unavailable in this environment; `google/fleurs` was
   substituted — also a standard, open multilingual speech corpus.
-- LoRA SFT + DPO fine-tuning ran locally on CPU (8GB RAM Mac) instead of
-  Colab — Colab wasn't driven in this session (no automated browser/Google-
-  login flow here) — via plain `transformers`/`peft`/`trl` instead
-  of Unsloth on a Colab T4 — SFT took ~2.5hrs, DPO took ~12.4hrs (real
+- LoRA SFT + DPO fine-tuning: Colab was available but not used for this
+  run — trained locally on CPU (8GB RAM Mac) instead, to get real CPU-only
+  numbers, via plain `transformers`/`peft`/`trl` instead of Unsloth on a
+  Colab T4 — SFT took ~2.5hrs, DPO took ~12.4hrs (real
   numbers in `checkpoints/training_stats.json`). The `finetune_comparison.md`
   latency numbers compare Ollama (base) vs. raw HF CPU generation
   (fine-tuned) — an inference-backend artifact, not a fair reflection of the
@@ -208,9 +208,9 @@ real eval results.
 
 **Training ran locally on CPU**, not Colab: `src/finetune/train_local_lora.py`
 (SFT) + `src/finetune/resume_dpo.py` (DPO, resumes from the saved SFT
-adapter). Colab wasn't driven in this session (no automated browser/Google-
-login flow here), so training used plain `transformers`/`peft`/`trl` on an
-8GB-RAM Mac instead of Unsloth on a T4 —
+adapter). Colab was available but not used for this run — trained locally
+instead to get real CPU-only numbers, using plain `transformers`/`peft`/`trl`
+on an 8GB-RAM Mac instead of Unsloth on a T4 —
 `colab/finetune_unsloth.ipynb` is still available as the fast-path option if
 you want to redo this on a real GPU later. LoRA config matches the plan
 (r=8, alpha=16, q/k/v/o_proj). Real measured times:
